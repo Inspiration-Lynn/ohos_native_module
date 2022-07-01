@@ -1,14 +1,19 @@
 #include "yolo.h"
 // debug 
-#include <filesystem>
-namespace fs = std::filesystem;
+// #include <filesystem>
+// namespace fs = std::filesystem;
 
 using namespace cv;
 using namespace dnn;
 using namespace std;
 
+// camera
+using namespace OHOS;
+using namespace OHOS::HITCamera;
+using namespace chrono;
 
 
+//yolo
 int endsWith(string s, string sub) {
     return s.rfind(sub) == (s.length() - sub.length()) ? 1 : 0;
 }
@@ -180,56 +185,53 @@ Mat detect(string imgpath) {
     HILOG_INFO("[HIT] [yolo] 2");    // 2
 
     HILOG_INFO("[HIT] [yolo] image path is %{public}s", imgpath.c_str());
-    Mat data = imread(imgpath);
 
-    // // debug
+    // 1: Get image from file
+    // HILOG_INFO("[HIT] [yolo] Get image from file ");
+    // Mat data = imread(imgpath);
+    // // Mat data = imread("/data/storage/el2/base/haps/yolo/images/bus.jpg");
     // if(data.empty()) {
-    //     HILOG_INFO("[HIT] [yolo] Could not read the image ");
-    // } 
-    // else {
-    //     HILOG_INFO("[HIT] [yolo] read image successfully");
-    // }
+    //      HILOG_INFO("[HIT] [yolo] 222Could not read the image ");
+    //  } 
+    //  else {
+    //      HILOG_INFO("[HIT] [yolo] 222read image successfully");
+    //  }
 
-    Mat data2 = imread("/data/storage/el2/base/haps/yolo/images/bus.jpg");
-    if(data2.empty()) {
-         HILOG_INFO("[HIT] [yolo] 222Could not read the image ");
-     } 
-     else {
-         HILOG_INFO("[HIT] [yolo] 222read image successfully");
-     }
+    // 2: Get image from camera
+    Mat decodedImage;
+    HILOG_INFO("[HIT] [yolo] Get image from camera ");
+    auto manager = CameraManager::getInstance();
+    if (manager == nullptr) {
+        // printf("Failed to get CameraManager instance\n");
+        HILOG_INFO("[HIT] [yolo] Failed to get CameraManager instance");
+    }
+    auto res = manager->Capture(320, 240);
+    if (auto handle = std::get_if<PictureHandle>(&res)) {
+        int nSize = handle->size;                              // Size of buffer  
+        void* pcBuffer = (void*) handle->buffer;   // Raw buffer data
+        // Create a Size(1, nSize) Mat object of 8-bit, single-byte elements
+        Mat rawData( 1, nSize, CV_8UC1, pcBuffer );
+        decodedImage = imdecode( rawData, IMREAD_UNCHANGED);
+        if ( decodedImage.data == NULL )   
+        {
+            // Error reading raw image data
+            HILOG_INFO("[HIT] [yolo] Decode image is Null");
+        }
+        manager->Release(*handle);
+    } else {
+        int err = std::get<int>(res);
+        // printf("Failed to capture picture, error code: %d\n", err);
+        HILOG_INFO("[HIT] [yolo] Failed to capture picture, error code: %{public}d", err);
+    }
 
-    // Mat dst;
-    // erode(data, dst, Mat());
-    
-    // if (imwrite("/data/test/yoloerodeFinished.jpg", dst)) {
-    //     HILOG_INFO("[HIT] [yolo] write yoloerodeFinished.jpg successfully!!!");
-    // } 
-    // else {
-    //     HILOG_INFO("[HIT] [yolo] write yoloerodeFinished.jpg unsuccessfully...");
-    // }
-    // if (imwrite("/yolo/yoloerodeFinished1.jpg", dst)) {
-    //     HILOG_INFO("[HIT] [yolo] write yoloerodeFinished1.jpg successfully!!!");
-    // } 
-    // else {
-    //     HILOG_INFO("[HIT] [yolo] write yoloerodeFinished1.jpg unsuccessfully...");
-    // }
 
-    // HILOG_INFO("[HIT] [yolo] debug1");
-
-    // string image_path = samples::findFile("yolov5s.onnx");
-    // HILOG_INFO("[HIT] [yolo] yolov5s.onnx path is %{public}s", image_path.c_str());
-    // // debug end
-
-    // Net_config yolo_nets = {0.3, 0.5, 0.3, "../weights/yolov5s.onnx"};
-    // Net_config yolo_nets = {0.3, 0.5, 0.3, "./weights/yolov5s.onnx"};
-    // Net_config yolo_nets = {0.3, 0.5, 0.3, "/yolo/weights/yolov5s.onnx"};
     Net_config yolo_nets = {0.3, 0.5, 0.3, "/data/storage/el2/base/haps/yolo/weights/yolov5s.onnx"};
     HILOG_INFO("[HIT] [yolo] here1");
     YOLO yolo_model(yolo_nets);
     HILOG_INFO("[HIT] [yolo] here2");
-    yolo_model.detect(data);
+    yolo_model.detect(decodedImage);
 
-    return data;
+    return decodedImage;
 }
 
 

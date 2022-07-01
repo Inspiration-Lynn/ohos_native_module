@@ -8,6 +8,13 @@
 
 #include "utils/log.h" // hilog调试用
 
+// camera
+#include <chrono>
+#include <cstdio>
+#include <fcntl.h>
+#include <unistd.h>
+#include "hitcamera_manager.h"
+
 struct Net_config {
     float confThreshold;
     float nmsThreshold;
