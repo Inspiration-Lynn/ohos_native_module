@@ -35,7 +35,7 @@ class YOLO {
 public:
     YOLO(Net_config config);
 
-    void detect(cv::Mat &frame);
+    std::string detect(cv::Mat &frame, double percentage);
 
 private:
     float *anchors;
@@ -57,4 +57,4 @@ private:
     cv::Mat resize_image(cv::Mat srcimg, int *newh, int *neww, int *top, int *left);
 };
 
-cv::Mat detect(std::string imgpath);
+std::string detect(double percentage);

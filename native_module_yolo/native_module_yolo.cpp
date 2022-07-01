@@ -3,44 +3,43 @@
 
 #include "yolo.h"
 
-// 2 parameters: input image path & output image path
+// 1 parameter: percentage
 static napi_value YoloDetect(napi_env env, napi_callback_info info)
 {
-    size_t requireArgc = 2;
-    size_t argc = 2;
-    napi_value argv[2] = { nullptr };
+    size_t requireArgc = 1;
+    size_t argc = 1;
+    napi_value argv[1] = { nullptr };
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr));
 
     NAPI_ASSERT(env, argc >= requireArgc, "Wrong number of arguments");
 
-    // check parameter's type, expect 2 string
+    // check parameter's type, expect 1 number
     napi_valuetype valuetype0;
     NAPI_CALL(env, napi_typeof(env, argv[0], &valuetype0));
 
-    napi_valuetype valuetype1;
-    NAPI_CALL(env, napi_typeof(env, argv[1], &valuetype1));
-
-    NAPI_ASSERT(env, valuetype0 == napi_string && valuetype1 == napi_string, "Wrong argument type. Strings expected.");
+    NAPI_ASSERT(env, valuetype0 == napi_number, "Wrong argument type. A Number expected.");
 
     // convert parameters from N-API to C types
-    char buffer1[128];
-    size_t copied1;
-    NAPI_CALL(env, napi_get_value_string_utf8(env, argv[0], buffer1, sizeof(buffer1), &copied1));
-    std::string imgPath = buffer1;
+    double percentage;
+    NAPI_CALL(env, napi_get_value_double(env, argv[0], &percentage));
 
-    char buffer2[128];
-    size_t copied2;
-    NAPI_CALL(env, napi_get_value_string_utf8(env, argv[1], buffer2, sizeof(buffer2), &copied2));
-    std::string outPath = buffer2;
+    // 1: read image from file
+    // char buffer1[128];
+    // size_t copied1;
+    // NAPI_CALL(env, napi_get_value_string_utf8(env, argv[0], buffer1, sizeof(buffer1), &copied1));
+    // std::string imgPath = buffer1;
 
     HILOG_INFO("[HIT] [yolo] 1");   // 1
+    std::string obj = detect(percentage);
+    HILOG_INFO("[HIT] In NAPI: obj is %{public}s", obj.c_str());
+    HILOG_INFO("[HIT] [yolo] detect finished");   
 
-    cv::Mat result = detect(imgPath);
-
-    HILOG_INFO("[HIT] [yolo] 8");   // 8
-    cv::imwrite(outPath, result);
-    HILOG_INFO("[HIT] [yolo] 9");   // 9
-
+    // napi_value detectObj;
+    // char* cobj = const_cast<char*>(obj.c_str());
+    // // NAPI_CALL(env, napi_create_string_utf16(env, cobj, obj.size(), &detectObj));
+    // NAPI_CALL(env, napi_create_string_latin(env, cobj, obj.size(), &detectObj))
+    
+    // return detectObj;
     return 0;
 }
 

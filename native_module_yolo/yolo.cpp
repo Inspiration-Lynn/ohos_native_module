@@ -1,7 +1,4 @@
 #include "yolo.h"
-// debug 
-// #include <filesystem>
-// namespace fs = std::filesystem;
 
 using namespace cv;
 using namespace dnn;
@@ -88,7 +85,7 @@ void YOLO::drawPred(float conf, int left, int top, int right, int bottom, Mat &f
     //Get the label for the class name and its confidence
     string label = format("%.2f", conf);
     label = this->class_names[classid] + ":" + label;
-    HILOG_INFO("[HIT] The image to be classified is  %{public}s", label.c_str());
+    HILOG_INFO("[HIT] draePred --- The image to be classified is  %{public}s", label.c_str());
 
     HILOG_INFO("[HIT] [yolo] 6");    // 6
     //Display the label at the top of the bounding box
@@ -101,16 +98,21 @@ void YOLO::drawPred(float conf, int left, int top, int right, int bottom, Mat &f
     HILOG_INFO("[HIT] [yolo] 7");    // 7
 }
 
-void YOLO::detect(Mat &frame) {
+
+string YOLO::detect(Mat &frame, double percentage) {
 
     HILOG_INFO("[HIT] [yolo] 3");    // 3
 
     int newh = 0, neww = 0, padh = 0, padw = 0;
     Mat dstimg = this->resize_image(frame, &newh, &neww, &padh, &padw);
+    HILOG_INFO("[HIT] [yolo] 3.1");
     Mat blob = blobFromImage(dstimg, 1 / 255.0, Size(this->inpWidth, this->inpHeight), Scalar(0, 0, 0), true, false);
+    HILOG_INFO("[HIT] [yolo] 3.2");
     this->net.setInput(blob);
+    HILOG_INFO("[HIT] [yolo] 3.3");
     vector<Mat> outs;
     this->net.forward(outs, this->net.getUnconnectedOutLayersNames());
+    HILOG_INFO("[HIT] [yolo] 3.4");
 
     int num_proposal = outs[0].size[1];
     int nout = outs[0].size[2];
@@ -170,21 +172,36 @@ void YOLO::detect(Mat &frame) {
     HILOG_INFO("[HIT] [yolo] 5");    // 5
 
     vector<int> indices;
+    string obj;
     dnn::NMSBoxes(boxes, confidences, this->confThreshold, this->nmsThreshold, indices);
     for (size_t i = 0; i < indices.size(); ++i) {
         int idx = indices[i];
         Rect box = boxes[idx];
-        this->drawPred(confidences[idx], box.x, box.y,
-                       box.x + box.width, box.y + box.height, frame, classIds[idx]);
+        // wxc: add confidence filter
+        if (confidences[idx] >= percentage) {
+            string center_x = to_string(box.x + (int)(box.width/2));
+            string center_y = to_string(box.y + (int)(box.height/2));
+            string label = class_names[classIds[idx]];
+            label[label.size()-1] = ':';
+            obj += label + center_x + "," + center_y + "|";
+            // string obj = label + center_x + center_y;
+            HILOG_INFO("[HIT] The image to be classified is %{public}s", label.c_str());
+            HILOG_INFO("[HIT] center is %{public}s %{public}s", center_x.c_str(), center_y.c_str());
+            HILOG_INFO("[HIT] obj is %{public}s", obj.c_str());
+
+            // draw detected object
+            this->drawPred(confidences[idx], box.x, box.y, box.x + box.width, box.y + box.height, frame, classIds[idx]);
+        }
     }
+    return obj;
 }
 
 
-Mat detect(string imgpath) {
+string detect(double percentage) {
     
     HILOG_INFO("[HIT] [yolo] 2");    // 2
 
-    HILOG_INFO("[HIT] [yolo] image path is %{public}s", imgpath.c_str());
+    // HILOG_INFO("[HIT] [yolo] image path is %{public}s", imgpath.c_str());
 
     // 1: Get image from file
     // HILOG_INFO("[HIT] [yolo] Get image from file ");
@@ -206,8 +223,10 @@ Mat detect(string imgpath) {
         HILOG_INFO("[HIT] [yolo] Failed to get CameraManager instance");
     }
     auto res = manager->Capture(320, 240);
+    HILOG_INFO("[HIT] [yolo] after capture");
     if (auto handle = std::get_if<PictureHandle>(&res)) {
-        int nSize = handle->size;                              // Size of buffer  
+        HILOG_INFO("[HIT] [yolo] capture a picture");
+        int nSize = handle->size;                  // Size of buffer  
         void* pcBuffer = (void*) handle->buffer;   // Raw buffer data
         // Create a Size(1, nSize) Mat object of 8-bit, single-byte elements
         Mat rawData( 1, nSize, CV_8UC1, pcBuffer );
@@ -221,6 +240,7 @@ Mat detect(string imgpath) {
     } else {
         int err = std::get<int>(res);
         // printf("Failed to capture picture, error code: %d\n", err);
+        HILOG_INFO("[HIT] [yolo] Failed to capture picture");
         HILOG_INFO("[HIT] [yolo] Failed to capture picture, error code: %{public}d", err);
     }
 
@@ -229,9 +249,12 @@ Mat detect(string imgpath) {
     HILOG_INFO("[HIT] [yolo] here1");
     YOLO yolo_model(yolo_nets);
     HILOG_INFO("[HIT] [yolo] here2");
-    yolo_model.detect(decodedImage);
+    string detectObj = yolo_model.detect(decodedImage, percentage);
 
-    return decodedImage;
+    // debug
+    imwrite("/data/storage/el2/base/haps/yolo/images/out.jpg", decodedImage);
+
+    return detectObj;
 }
 
 
