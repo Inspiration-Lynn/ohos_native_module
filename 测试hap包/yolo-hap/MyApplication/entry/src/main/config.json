@@ -1,0 +1,49 @@
+
+{
+  "app": {
+    "bundleName": "napi.test",
+    "vendor": "test",
+    "version": {
+      "code": 1000000,
+      "name": "1.0.0"
+    }
+  },
+  "deviceConfig": {},
+  "module": {
+    "package": "napi.test",
+    "name": ".MyApplication",
+    "mainAbility": ".MainAbility",
+    "deviceType": [
+      "phone"
+    ],
+    "distro": {
+      "deliveryWithInstall": true,
+      "moduleName": "entry",
+      "moduleType": "entry",
+      "installationFree": false
+    },
+    "abilities": [
+      {
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ],
+        "srcPath": "ServiceAbility",
+        "name": ".ServiceAbility",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_serviceability",
+        "type": "service",
+        "label": "$string:description_serviceability",
+        "visible" : true
+      }
+    ],
+    "js": []
+  }
+}

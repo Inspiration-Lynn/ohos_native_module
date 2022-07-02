@@ -1,0 +1,226 @@
+{
+  "app": {
+    "bundleName": "napi.test",
+    "vendor": "test",
+    "version": {
+      "code": 1000000,
+      "name": "1.0.0"
+    }
+  },
+  "deviceConfig": {},
+  "module": {
+    "package": "napi.test",
+    "name": ".MyApplication",
+    "mainAbility": ".MainAbility",
+    "srcPath": "",
+    "deviceType": [
+      "phone"
+    ],
+    "distro": {
+      "deliveryWithInstall": true,
+      "moduleName": "entry",
+      "moduleType": "entry",
+      "installationFree": false
+    },
+    "abilities": [
+      {
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ],
+        "orientation": "unspecified",
+        "visible": true,
+        "srcPath": "MainAbility",
+        "name": ".MainAbility",
+        "srcLanguage": "js",
+        "icon": "$media:icon",
+        "description": "$string:description_mainability",
+        "formsEnabled": false,
+        "label": "$string:entry_MainAbility",
+        "type": "page",
+        "launchType": "standard"
+      },
+      {
+        "visible": true,
+        "srcPath": "gcdir",
+        "name": ".gcdir",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_gcdir",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "gcdirp",
+        "name": ".gcdirp",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_gcdirp",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "gfdir",
+        "name": ".gfdir",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_gfdir",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "gfdirp",
+        "name": ".gfdirp",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_gfdirp",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "gocldp",
+        "name": ".gocldp",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_gocldp",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "gocld",
+        "name": ".gocld",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_gocld",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "facc",
+        "name": ".facc",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_facc",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "faccp",
+        "name": ".faccp",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_faccp",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "faccs",
+        "name": ".faccs",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_faccs",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "mkdir",
+        "name": ".mkdir",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_mkdir",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "mkdirp",
+        "name": ".mkdirp",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_mkdirp",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "mkdirs",
+        "name": ".mkdirs",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_mkdirs",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "fopen",
+        "name": ".fopen",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_fopen",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "fopenp",
+        "name": ".fopenp",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_fopenp",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "fopens",
+        "name": ".fopens",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_fopens",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "flist",
+        "name": ".flist",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_flist",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "sfacc",
+        "name": ".sfacc",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_sfacc",
+        "type": "service"
+      },
+      {
+        "visible": true,
+        "srcPath": "fmkdir",
+        "name": ".fmkdir",
+        "icon": "$media:icon",
+        "srcLanguage": "js",
+        "description": "$string:description_fmkdir",
+        "type": "service"
+      }
+    ],
+    "js": [
+      {
+        "pages": [
+          "pages/index/index",
+          "pages/second/second"
+        ],
+        "name": ".MainAbility",
+        "window": {
+          "designWidth": 720,
+          "autoDesignWidth": false
+        }
+      }
+    ]
+  }
+}
