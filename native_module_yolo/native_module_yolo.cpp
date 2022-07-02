@@ -34,13 +34,10 @@ static napi_value YoloDetect(napi_env env, napi_callback_info info)
     HILOG_INFO("[HIT] In NAPI: obj is %{public}s", obj.c_str());
     HILOG_INFO("[HIT] [yolo] detect finished");   
 
-    // napi_value detectObj;
-    // char* cobj = const_cast<char*>(obj.c_str());
-    // // NAPI_CALL(env, napi_create_string_utf16(env, cobj, obj.size(), &detectObj));
-    // NAPI_CALL(env, napi_create_string_latin(env, cobj, obj.size(), &detectObj))
-    
-    // return detectObj;
-    return 0;
+    napi_value detectObj = nullptr;
+    napi_create_string_utf8(env, obj.c_str(), obj.length(), &detectObj);   
+
+    return detectObj;
 }
 
 static napi_value YoloExport(napi_env env, napi_value exports)
