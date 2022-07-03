@@ -177,20 +177,20 @@ string YOLO::detect(Mat &frame, double percentage) {
     for (size_t i = 0; i < indices.size(); ++i) {
         int idx = indices[i];
         Rect box = boxes[idx];
-        // wxc: add confidence filter
+        // wxc: add confidence filter & remove drawPred
         if (confidences[idx] >= percentage) {
             string center_x = to_string(box.x + (int)(box.width/2));
             string center_y = to_string(box.y + (int)(box.height/2));
             string label = class_names[classIds[idx]];
             label[label.size()-1] = ':';
             obj += label + center_x + "," + center_y + "|";
-            // string obj = label + center_x + center_y;
-            HILOG_INFO("[HIT] The image to be classified is %{public}s", label.c_str());
-            HILOG_INFO("[HIT] center is %{public}s %{public}s", center_x.c_str(), center_y.c_str());
-            HILOG_INFO("[HIT] obj is %{public}s", obj.c_str());
+            
+            // HILOG_INFO("[HIT] The image to be classified is %{public}s", label.c_str());
+            // HILOG_INFO("[HIT] center is %{public}s %{public}s", center_x.c_str(), center_y.c_str());
+            // HILOG_INFO("[HIT] obj is %{public}s", obj.c_str());
 
             // draw detected object
-            this->drawPred(confidences[idx], box.x, box.y, box.x + box.width, box.y + box.height, frame, classIds[idx]);
+            // this->drawPred(confidences[idx], box.x, box.y, box.x + box.width, box.y + box.height, frame, classIds[idx]);
         }
     }
     return obj;
@@ -199,7 +199,7 @@ string YOLO::detect(Mat &frame, double percentage) {
 
 string detect(double percentage) {
     
-    HILOG_INFO("[HIT] [yolo] 2");    // 2
+    // HILOG_INFO("[HIT] [yolo] 2");    
 
     // HILOG_INFO("[HIT] [yolo] image path is %{public}s", imgpath.c_str());
 
@@ -216,14 +216,14 @@ string detect(double percentage) {
 
     // 2: Get image from camera
     Mat decodedImage;
-    HILOG_INFO("[HIT] [yolo] Get image from camera ");
+    HILOG_INFO("[HIT] [yolo] Get image from camera start");
     auto manager = CameraManager::getInstance();
     if (manager == nullptr) {
         // printf("Failed to get CameraManager instance\n");
         HILOG_INFO("[HIT] [yolo] Failed to get CameraManager instance");
     }
     auto res = manager->Capture(320, 240);
-    HILOG_INFO("[HIT] [yolo] after capture");
+    // HILOG_INFO("[HIT] [yolo] after capture");
     if (auto handle = std::get_if<PictureHandle>(&res)) {
         HILOG_INFO("[HIT] [yolo] capture a picture");
         int nSize = handle->size;                  // Size of buffer  
@@ -239,20 +239,19 @@ string detect(double percentage) {
         manager->Release(*handle);
     } else {
         int err = std::get<int>(res);
-        // printf("Failed to capture picture, error code: %d\n", err);
         HILOG_INFO("[HIT] [yolo] Failed to capture picture");
         HILOG_INFO("[HIT] [yolo] Failed to capture picture, error code: %{public}d", err);
     }
-
+    HILOG_INFO("[HIT] [yolo] Get image from camera end");
 
     Net_config yolo_nets = {0.3, 0.5, 0.3, "/data/storage/el2/base/haps/yolo/weights/yolov5s.onnx"};
-    HILOG_INFO("[HIT] [yolo] here1");
+    // HILOG_INFO("[HIT] [yolo] here1");
     YOLO yolo_model(yolo_nets);
-    HILOG_INFO("[HIT] [yolo] here2");
+    // HILOG_INFO("[HIT] [yolo] here2");
     string detectObj = yolo_model.detect(decodedImage, percentage);
 
     // debug
-    imwrite("/data/storage/el2/base/haps/yolo/images/out.jpg", decodedImage);
+    // imwrite("/data/storage/el2/base/haps/yolo/images/out.jpg", decodedImage);
 
     return detectObj;
 }

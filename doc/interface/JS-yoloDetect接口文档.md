@@ -22,7 +22,7 @@ yoloDetect()方法调用摄像头进行拍照，并对照片进行Yolo目标检�
 
 检测结果字符串（yoloDetect方法的返回值）的解析工作在JS代码中实现，构建为对象数组。
 
-### 每个检测到的目标对象
+每个检测到的目标对象结构：
 
 ```javascript
 {
@@ -56,7 +56,7 @@ for (let i=0; i < objArray.length; i++) {
 }
 ```
 
-### 遍历打印每个检测目标的标签和位置坐标
+遍历打印每个检测目标的标签和位置坐标：
 
 ```javascript
 for (let i=0; i < objArray.length; i++) {
