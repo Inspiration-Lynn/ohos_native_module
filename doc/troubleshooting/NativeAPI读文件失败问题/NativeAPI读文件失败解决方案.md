@@ -206,3 +206,11 @@ power.openFile("/data/storage/el2/base/haps/entry/files/book.txt")
 ## 朝欣师兄的解决方案
 
 https://blog.luo980.com/tricks/play/ohos%e5%9b%be%e5%83%8f%e6%a3%80%e6%b5%8bhap/
+
+1. 在/data/app/el2/100/base/napi.test/haps新建文件夹，放入需要读取的文件
+2. 修改权限
+
+```bash
+chown -R 20010033:20010033 yolo
+```
+
