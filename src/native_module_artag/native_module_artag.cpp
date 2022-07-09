@@ -5,15 +5,18 @@
 
 static napi_value ArtagLocating(napi_env env, napi_callback_info info)
 {
-    HILOG_INFO("[HIT] [artag] 1");   
+    HILOG_INFO("[HIT] [artag] ArtagLocating start");   
 
-    // read t1.jpg and t2.jpg from "/data/storage/el2/base/haps/artag/"
-    // write output to "/data/storage/el2/base/haps/artag"
-    locating();
+    // read background and detect frame from "/data/storage/el2/base/haps/artag/"
+    // write output to "/data/storage/el2/base/haps/artag/"
+    std::string detectString = locating();
 
-    HILOG_INFO("[HIT] [artag] 8");   
+    napi_value detectObj = nullptr;
+    napi_create_string_utf8(env, detectString.c_str(), detectString.length(), &detectObj);   
 
-    return NULL;
+    HILOG_INFO("[HIT] [artag] ArtagLocating end");   
+
+    return detectObj;
 }
 
 

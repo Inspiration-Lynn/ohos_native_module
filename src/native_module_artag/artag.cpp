@@ -10,12 +10,13 @@ string intToString(int number)
 	return ss.str();
 }
 
-Mat MoveDetect(Mat& background, Mat& img, const int minArea)
+String MoveDetect(Mat& background, Mat& img, const int minArea, bool isWriteResultImg=false)
 {
 	HILOG_INFO("[HIT] [artag] MoveDetect() start"); 
+	string detectString;
 	Mat result = img.clone();
 	Mat gray1, gray2;
-	auto start = std::chrono::system_clock::now();
+	// auto start = std::chrono::system_clock::now();
 	cvtColor(background, gray1, CV_BGR2GRAY);
 	cvtColor(img, gray2, CV_BGR2GRAY);
 	Mat diff;
@@ -26,6 +27,7 @@ Mat MoveDetect(Mat& background, Mat& img, const int minArea)
 	int num = connectedComponentsWithStats(diff, diff, stats, centroids, 8, CV_16U);
 	RNG rng(10086);
 	vector<Vec3b> colors;
+
 	for (int i = 0; i < num; i++)
 	{
 		Vec3b vec3 = Vec3b(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
@@ -40,8 +42,8 @@ Mat MoveDetect(Mat& background, Mat& img, const int minArea)
 		int w = stats.at<int>(i, CC_STAT_WIDTH);
 		int h = stats.at<int>(i, CC_STAT_HEIGHT);
 		int area = stats.at<int>(i, CC_STAT_AREA);
-		if (area < minArea)
-		{
+		if (area < minArea) {
+			HILOG_INFO("[HIT] [artag] area is smaller than OBJECT_MIN_AREA"); 
 			continue;
 		}
 		circle(result, Point(center_x, center_y), 2, Scalar(0, 255, 0), 2, 8, 0);
@@ -49,26 +51,36 @@ Mat MoveDetect(Mat& background, Mat& img, const int minArea)
 		rectangle(result, rect, colors[i], 1, 8, 0);
 		putText(result, "(" + intToString(i) + "," + intToString(center_x) + "," + intToString(center_y) + ")", Point(center_x, center_y),
 			FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 255), 1);
-		cout << "number: " << i << ",area: " << area << endl;
+		detectString += "(" + to_string(center_x) + "," + to_string(center_y) + ")";
+		HILOG_INFO("[HIT] [artag] number: %{public}d", num); 
+		HILOG_INFO("[HIT] [artag] area: %{public}d", area); 
+		
 	}
-	auto end = std::chrono::system_clock::now();
-	std::chrono::duration<double> elapsed = end - start;
-	cout << "time is :" << elapsed.count() << "s" << endl;
+	// auto end = std::chrono::system_clock::now();
+	// std::chrono::duration<double> elapsed = end - start;
+	// cout << "time is :" << elapsed.count() << "s" << endl;
+
+	// 可选：输出检测后的图片
+	if (isWriteResultImg) {
+		imwrite("/data/storage/el2/base/haps/artag/out.png", result);
+	}
 
 	HILOG_INFO("[HIT] [artag] MoveDetect() end"); 
-	return result;
+	return detectString;
 }
 
+// apply perspective transform to source image
 void setPic(const vector<Point2f>& srcPoint, const vector<Point2f>& dstPoint, const Point2f& desResolution, Mat& src, Mat& dst)
 {
+	// calculates the 3*3 matrix of a perspective transform
 	Mat matrix = getPerspectiveTransform(srcPoint, dstPoint);
+	// Applies a perspective transformation to an image
 	warpPerspective(src, dst, matrix, Point(desResolution.x, desResolution.y));
 }
 
 
 void getSrcPoint(const Mat& inputImage, vector<Point2f>& marker_coordinates)
 {
-	HILOG_INFO("[HIT] [artag] getSrcPoint() start"); 
 	std::vector<int> markerIds;
 	std::vector<std::vector<Point2f>> markerCorners, rejectedCandidates;
 	Ptr<aruco::DetectorParameters> parameters = aruco::DetectorParameters::create();
@@ -79,39 +91,66 @@ void getSrcPoint(const Mat& inputImage, vector<Point2f>& marker_coordinates)
 		// each marker's 4 corners' coordinates
 		// std::cout << markerCorners[i][0] << markerCorners[i][1] << markerCorners[i][2] << markerCorners[i][3] << std::endl;
 
-		float center_x, center_y;
-		center_x = (markerCorners[i][0].x + markerCorners[i][1].x + markerCorners[i][2].x + markerCorners[i][3].x) / 4;
-		center_y = (markerCorners[i][0].y + markerCorners[i][1].y + markerCorners[i][2].y + markerCorners[i][3].y) / 4;
+		// 4 artag markers's centers as new corners
+		// float center_x, center_y;
+		// std::cout << "id: " << markerIds[i] << endl;
+		// center_x = (markerCorners[i][0].x + markerCorners[i][1].x + markerCorners[i][2].x + markerCorners[i][3].x) / 4;
+		// center_y = (markerCorners[i][0].y + markerCorners[i][1].y + markerCorners[i][2].y + markerCorners[i][3].y) / 4;
 		// std::cout << "center: " << center_x << " " << center_y << std::endl;
-		// HILOG_INFO("[HIT] [artag] center: %{public}s %{public}s", to_string(center_x).c_str(), to_string(center_y).c_str()); 
-		
-		marker_coordinates.push_back(Point2f(center_x, center_y));
+		// marker_coordinates.push_back(Point2f(center_x, center_y));
+
+		// 4 artag markers's corners as new corners
+		switch (i)
+        {
+            case 2:
+                marker_coordinates.push_back(Point2f(markerCorners[i][0].x, markerCorners[i][0].y));
+                break;
+            case 3:
+                marker_coordinates.push_back(Point2f(markerCorners[i][1].x, markerCorners[i][1].y));
+                break;
+            case 0:
+                marker_coordinates.push_back(Point2f(markerCorners[i][3].x, markerCorners[i][3].y));
+                break;
+            case 1:
+                marker_coordinates.push_back(Point2f(markerCorners[i][2].x, markerCorners[i][2].y));
+                break;
+        }
 	}
-	HILOG_INFO("[HIT] [artag] getSrcPoint() end");
 }
 
-void locating()
+string locating()
 {
-	// HILOG_INFO("[HIT] In NAPI: obj is %{public}s", obj.c_str());
-    HILOG_INFO("[HIT] [artag] locating() start");   
+	HILOG_INFO("[HIT] [artag] locating() start");   
+	string detectRes;
 	
-	// Mat background = imread("t1.jpg");
-	// Mat frame = imread("t2.jpg");
-	Mat background = imread("/data/storage/el2/base/haps/artag/t1.jpg");
-	Mat frame = imread("/data/storage/el2/base/haps/artag/t2.jpg");
+	// 此处需要把udp接收到的图片转换为Mat，不能从文件中读取
+	Mat background = imread("/data/storage/el2/base/haps/artag/background.png");
+	if (background.empty()) {
+		HILOG_INFO("[HIT] [artag] background image is empty");   
+		return detectRes;
+	}
+	Mat frame = imread("/data/storage/el2/base/haps/artag/frame.png");
+	if (frame.empty()) {
+		HILOG_INFO("[HIT] [artag] frame image is empty");   
+		return detectRes;
+	}
 
     // the position to set the name of input file
 	vector<Point2f> src;
 	getSrcPoint(background, src);
-	Point2f dstResolution{ 430.0,687.0 };
-	vector<Point2f> dest{ {0.0,0.0} ,{dstResolution.x,0.0},{0.0,dstResolution.y}, {dstResolution.x,dstResolution.y} };
+	// set resolution
+	Point2f dstResolution{ DEST_RESOLUTION_X, DEST_RESOLUTION_Y };
+	vector<Point2f> dest{ {0.0, dstResolution.y}, {dstResolution.x, dstResolution.y}, {0.0, 0.0}, {dstResolution.x, 0.0}  };
 	setPic(src, dest, dstResolution, background, background);
 	setPic(src, dest, dstResolution, frame, frame);
 
-	Mat result = MoveDetect(background, frame, 1000);
-	// imwrite("t.jpg", result);
-	imwrite("/data/storage/el2/base/haps/artag/output.jpg", result);
+	detectRes = MoveDetect(background, frame, OBJECT_MIN_AREA, IS_WRITE_IMG);
+	HILOG_INFO("[HIT] [artag] location: %{public}s", detectRes.c_str());
 
-	HILOG_INFO("[HIT] [artag] locating() end"); 
+	HILOG_INFO("[HIT] [artag] locating() end");
+
+	return detectRes;
 }
+
+
 
