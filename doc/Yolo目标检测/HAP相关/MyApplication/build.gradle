@@ -1,0 +1,54 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply plugin: 'com.huawei.ohos.app'
+
+//For instructions on signature configuration, see https://developer.harmonyos.com/cn/docs/documentation/doc-guides/ide_debug_device-0000001053822404#section1112183053510
+ohos {
+    signingConfigs {
+        debug {
+            storeFile file('D:\\project\\OpenHarmonySign\\ide_ohos_hap.p12')
+            storePassword '0000001B0F8B2FC1B4DEE0CAD0B44DE025BD93A6BE4F2BC9EDA1B5D6CA24FCC6A2C0384A78F81048578438'
+            keyAlias = 'ohos'
+            keyPassword '0000001BC523C65B3CC14DCCC21C12AF3B09048E864320BC34D77617322B54A696A817F1B5D3DF0A45A487'
+            signAlg = 'SHA256withECDSA'
+            profile file('D:\\project\\OpenHarmonySign\\napitest.p7b')
+            certpath file('D:\\project\\OpenHarmonySign\\ide_ohos_hap.cer')
+        }
+        release {
+            storeFile file('D:\\project\\OpenHarmonySign\\ide_ohos_hap.p12')
+            storePassword '0000001BA74F76C26D95F940AFAC9D8800CC89E0CCA160480B03984C12E0CE00802BEA571297E5E50A86FE'
+            keyAlias = 'ohos'
+            keyPassword '0000001B10FAEDCD0DC5C13DA360BA73C8D44AD31CA8CF66AEEF8123B7FFF5466E603D7E8ACAFD47445437'
+            signAlg = 'SHA256withECDSA'
+            profile file('D:\\project\\OpenHarmonySign\\napitest.p7b')
+            certpath file('D:\\project\\OpenHarmonySign\\ide_ohos_hap.cer')
+        }
+    }
+    compileSdkVersion 8
+    supportSystem "standard"
+}
+
+buildscript {
+    repositories {
+        maven {
+            url 'https://repo.huaweicloud.com/repository/maven/'
+        }
+        maven {
+            url 'https://developer.huawei.com/repo/'
+        }
+    }
+    dependencies {
+        classpath 'com.huawei.ohos:hap:3.0.5.2'
+        classpath 'com.huawei.ohos:decctest:1.2.7.2'
+    }
+}
+
+allprojects {
+    repositories {
+        maven {
+            url 'https://repo.huaweicloud.com/repository/maven/'
+        }
+        maven {
+            url 'https://developer.huawei.com/repo/'
+        }
+    }
+}
