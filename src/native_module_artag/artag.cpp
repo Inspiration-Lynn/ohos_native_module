@@ -3,6 +3,13 @@
 using namespace std;
 using namespace cv;
 
+// udp
+using namespace OHOS;
+using namespace OHOS::HITCamera;
+using namespace chrono;
+
+Mat background;
+
 string intToString(int number)
 {
 	stringstream ss;
@@ -10,7 +17,65 @@ string intToString(int number)
 	return ss.str();
 }
 
-String MoveDetect(Mat& background, Mat& img, const int minArea, bool isWriteResultImg=false)
+int getBackground()
+{
+
+	HILOG_INFO("[HIT] [artag] Get background from udp start");
+    auto manager = CameraManager::getInstance();
+    if (manager == nullptr) {
+        // printf("Failed to get CameraManager instance\n");
+        HILOG_INFO("[HIT] [artag] Failed to get CameraManager instance");
+    }
+    if (manager->BindRemote(5678) != ERR_OK) {
+		HILOG_INFO("[HIT] [artag] Failed to bind remote");
+    }
+    
+	// auto t0 = system_clock::now();
+	auto res = manager->GetRemote();
+	if (auto handle = std::get_if<PictureHandle>(&res)) {
+		// auto t1 = system_clock::now();
+		// auto duration = duration_cast<microseconds>(t1 - t0);
+		// auto dd = double(duration.count()) * microseconds::period::num / microseconds::period::den;
+		// printf("Picture cost %lf\n", dd);
+		HILOG_INFO("[HIT] [artag] recieve a picture");
+        int nSize = handle->size;                  // Size of buffer  
+        void* pcBuffer = (void*) handle->buffer;   // Raw buffer data
+        // Create a Size(1, nSize) Mat object of 8-bit, single-byte elements
+        Mat rawData( 1, nSize, CV_8UC1, pcBuffer );
+        background = imdecode( rawData, IMREAD_UNCHANGED);
+        if ( background.data == NULL )   
+        {
+            // Error reading raw image data
+            HILOG_INFO("[HIT] [artag] Decode image is Null");
+        }
+		manager->Release(*handle);
+	} else {
+		int err = std::get<int>(res);
+        HILOG_INFO("[HIT] [artag] Failed to capture picture, error code: %{public}d", err);
+		return -1;
+	}
+    
+    manager->UnbindRemote();
+
+    HILOG_INFO("[HIT] [artag] Get background from udp end");
+
+	return 0;
+}
+
+
+int getBackgroundFromFile() {
+	background = imread("/data/storage/el2/base/haps/artag/background.jpg");
+	if (background.empty()) {
+		HILOG_INFO("[HIT] [artag] Fail to read background.jpg from /data/storage/el2/base/haps/artag/");
+		return -1;
+	}
+
+	return 0;
+}
+
+
+// String MoveDetect(Mat& background, Mat& img, const int minArea, bool isWriteResultImg=false)
+String MoveDetect(Mat& img, const int minArea, bool isWriteResultImg=false)
 {
 	HILOG_INFO("[HIT] [artag] MoveDetect() start"); 
 	string detectString;
@@ -43,7 +108,7 @@ String MoveDetect(Mat& background, Mat& img, const int minArea, bool isWriteResu
 		int h = stats.at<int>(i, CC_STAT_HEIGHT);
 		int area = stats.at<int>(i, CC_STAT_AREA);
 		if (area < minArea) {
-			HILOG_INFO("[HIT] [artag] area is smaller than OBJECT_MIN_AREA"); 
+			// HILOG_INFO("[HIT] [artag] area is smaller than OBJECT_MIN_AREA"); 
 			continue;
 		}
 		circle(result, Point(center_x, center_y), 2, Scalar(0, 255, 0), 2, 8, 0);
@@ -122,18 +187,65 @@ string locating()
 {
 	HILOG_INFO("[HIT] [artag] locating() start");   
 	string detectRes;
+
+	// 1: Get background & frame image from file
+	// Mat background = imread("/data/storage/el2/base/haps/artag/background.png");
+	// if (background.empty()) {
+	// 	HILOG_INFO("[HIT] [artag] background image is empty");   
+	// 	return detectRes;
+	// }
+	// Mat frame = imread("/data/storage/el2/base/haps/artag/frame.png");
+	// if (frame.empty()) {
+	// 	HILOG_INFO("[HIT] [artag] frame image is empty");   
+	// 	return detectRes;
+	// }
 	
-	// 此处需要把udp接收到的图片转换为Mat，不能从文件中读取
-	Mat background = imread("/data/storage/el2/base/haps/artag/background.png");
-	if (background.empty()) {
-		HILOG_INFO("[HIT] [artag] background image is empty");   
-		return detectRes;
+
+	// 2: Get image from udp
+    Mat frame;
+    HILOG_INFO("[HIT] [artag] Get image from udp start");
+    auto manager = CameraManager::getInstance();
+    if (manager == nullptr) {
+        // printf("Failed to get CameraManager instance\n");
+        HILOG_INFO("[HIT] [artag] Failed to get CameraManager instance");
+    }
+    if (manager->BindRemote(5678) != ERR_OK) {
+		HILOG_INFO("[HIT] [artag] Failed to bind remote");
+    }
+    
+	// auto t0 = system_clock::now();
+	auto res = manager->GetRemote();
+	if (auto handle = std::get_if<PictureHandle>(&res)) {
+		// auto t1 = system_clock::now();
+		// auto duration = duration_cast<microseconds>(t1 - t0);
+		// auto dd = double(duration.count()) * microseconds::period::num / microseconds::period::den;
+		// printf("Picture cost %lf\n", dd);
+		HILOG_INFO("[HIT] [artag] recieve a picture");
+        int nSize = handle->size;                  // Size of buffer  
+        void* pcBuffer = (void*) handle->buffer;   // Raw buffer data
+        // Create a Size(1, nSize) Mat object of 8-bit, single-byte elements
+        Mat rawData( 1, nSize, CV_8UC1, pcBuffer );
+        frame = imdecode( rawData, IMREAD_UNCHANGED);
+        if ( frame.data == NULL )   
+        {
+            // Error reading raw image data
+            HILOG_INFO("[HIT] [artag] Decode image is Null");
+        }
+		manager->Release(*handle);
+	} else {
+		int err = std::get<int>(res);
+        HILOG_INFO("[HIT] [artag] Failed to capture picture, error code: %{public}d", err);
 	}
-	Mat frame = imread("/data/storage/el2/base/haps/artag/frame.png");
-	if (frame.empty()) {
-		HILOG_INFO("[HIT] [artag] frame image is empty");   
-		return detectRes;
-	}
+    manager->UnbindRemote();
+    HILOG_INFO("[HIT] [artag] Get image from udp end");
+
+	// image undistortion
+	Mat frameUndistorted; 
+    Mat cameraMatrix, distCoeffs;
+    FileStorage fs("/data/storage/el2/base/haps/artag/camera_undistortion.yaml", FileStorage::READ);  // read camera parameters from file
+	fs["K"] >> cameraMatrix;
+    fs["D"] >> distCoeffs;
+	undistort(frame, frameUndistorted, cameraMatrix, distCoeffs);
 
     // the position to set the name of input file
 	vector<Point2f> src;
@@ -142,9 +254,10 @@ string locating()
 	Point2f dstResolution{ DEST_RESOLUTION_X, DEST_RESOLUTION_Y };
 	vector<Point2f> dest{ {0.0, dstResolution.y}, {dstResolution.x, dstResolution.y}, {0.0, 0.0}, {dstResolution.x, 0.0}  };
 	setPic(src, dest, dstResolution, background, background);
-	setPic(src, dest, dstResolution, frame, frame);
+	setPic(src, dest, dstResolution, frameUndistorted, frameUndistorted);
 
-	detectRes = MoveDetect(background, frame, OBJECT_MIN_AREA, IS_WRITE_IMG);
+	// detectRes = MoveDetect(background, frame, OBJECT_MIN_AREA, IS_WRITE_IMG);
+	detectRes = MoveDetect(frameUndistorted, OBJECT_MIN_AREA, IS_WRITE_IMG);
 	HILOG_INFO("[HIT] [artag] location: %{public}s", detectRes.c_str());
 
 	HILOG_INFO("[HIT] [artag] locating() end");

@@ -6,7 +6,10 @@ ohos_shared_library("artag") {
     "//foundation/ace/napi/interfaces/kits",
     # opencv头文件
     "/home/hit/wxc/OpenCV/out/include/opencv4",
-    "//utils/native/base/include"
+    "//utils/native/base/include",
+    # udp
+    "//foundation/multimedia/hit_camera_standard/interfaces/kits/native",
+    "//foundation/multimedia/hit_camera_standard/services/include",
   
   ]
 
@@ -75,7 +78,11 @@ ohos_shared_library("artag") {
   configs += [ "//build/config/compiler:exceptions" ]
 
   # 指定编译依赖
-  deps = [ "//foundation/ace/napi:ace_napi"]  
+  deps = [ 
+    "//foundation/ace/napi:ace_napi",
+    "//utils/native/base:utils",
+    "//foundation/multimedia/hit_camera_standard/interfaces/kits/native:hit_camera_client"
+  ]  
 
   relative_install_dir = "module"
 
@@ -83,7 +90,11 @@ ohos_shared_library("artag") {
   part_name = "napi"
 
   if (is_standard_system) {
-    external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+    external_deps = [ 
+      "hiviewdfx_hilog_native:libhilog",
+      "ipc:ipc_core",
+      "samgr_standard:samgr_proxy",
+    ]
   } else {
     external_deps = [ "hilog:libhilog" ]
   }
